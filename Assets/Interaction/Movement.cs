@@ -5,11 +5,11 @@ public class Movement : MonoBehaviour
 {
 	public float speedMultiplier = 0.25F;
 	public float forceMultiplier = 16F;
-	Rigidbody rigidbody;
+	CharacterController characterController;
 
 	void Start()
 	{
-		rigidbody = GetComponent<Rigidbody>();
+		characterController = GetComponent<CharacterController>();
 	}
 
 	void Update()
@@ -30,8 +30,7 @@ public class Movement : MonoBehaviour
 			desiredVelocity += Vector3.up;
 		if (Input.GetKey(KeyCode.LeftShift))
 			desiredVelocity += Vector3.down;
-		//Vector3 delta = (desiredVelocity - rigidbody.velocity).normalized * speedMultiplier;
-		rigidbody.AddForce(desiredVelocity * speedMultiplier - rigidbody.velocity, ForceMode.VelocityChange);
+		characterController.Move(desiredVelocity * speedMultiplier);
 	}
 
 	Vector3 RemoveY(Vector3 vector)
