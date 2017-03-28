@@ -3,8 +3,12 @@ using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
+[Serializable]
 public class World : MonoBehaviour
 {
 	public const float gravity = 9.80665F;
@@ -88,8 +92,6 @@ public class World : MonoBehaviour
 
 	void Start()
 	{
-		Global.world = this;
-
 		meshFilter = GetComponent<MeshFilter>();
 		Vector3[] cubeVertices = { new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(1, 1, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 1), new Vector3(0, 1, 1), new Vector3(1, 1, 1) };
 		meshFilter.mesh.vertices = cubeVertices;
@@ -227,24 +229,36 @@ public class World : MonoBehaviour
 
 	public int GetFreeSides(Vector3i position)
 	{
-		if (Global.world.GetBlock(position) == null)
+		if (GetBlock(position) == null)
 			UnityEngine.Debug.Log(position);
-		Type blockType = Global.world.GetBlock(position).GetType();
-		return (Global.world.IsBlockThere(position + Vector3i.left) && Global.world.GetBlock(position + Vector3i.left).GetType() == blockType ? 0 : 1) |
-			(Global.world.IsBlockThere(position + Vector3i.right) && Global.world.GetBlock(position + Vector3i.right).GetType() == blockType ? 0 : 2) |
-			(Global.world.IsBlockThere(position + Vector3i.down) && Global.world.GetBlock(position + Vector3i.down).GetType() == blockType ? 0 : 4) |
-			(Global.world.IsBlockThere(position + Vector3i.up) && Global.world.GetBlock(position + Vector3i.up).GetType() == blockType ? 0 : 8) |
-			(Global.world.IsBlockThere(position + Vector3i.back) && Global.world.GetBlock(position + Vector3i.back).GetType() == blockType ? 0 : 16) |
-			(Global.world.IsBlockThere(position + Vector3i.forward) && Global.world.GetBlock(position + Vector3i.forward).GetType() == blockType ? 0 : 32);
+		Type blockType = GetBlock(position).GetType();
+		return (IsBlockThere(position + Vector3i.left) && GetBlock(position + Vector3i.left).GetType() == blockType ? 0 : 1) |
+			(IsBlockThere(position + Vector3i.right) && GetBlock(position + Vector3i.right).GetType() == blockType ? 0 : 2) |
+			(IsBlockThere(position + Vector3i.down) && GetBlock(position + Vector3i.down).GetType() == blockType ? 0 : 4) |
+			(IsBlockThere(position + Vector3i.up) && GetBlock(position + Vector3i.up).GetType() == blockType ? 0 : 8) |
+			(IsBlockThere(position + Vector3i.back) && GetBlock(position + Vector3i.back).GetType() == blockType ? 0 : 16) |
+			(IsBlockThere(position + Vector3i.forward) && GetBlock(position + Vector3i.forward).GetType() == blockType ? 0 : 32);
 	}
 
 	public int GetFreeSides2(Vector3i position) //TODO
 	{
-		return (Global.world.IsSolid(position + Vector3i.left) ? 0 : 1) |
-			(Global.world.IsSolid(position + Vector3i.right) ? 0 : 2) |
-			(Global.world.IsSolid(position + Vector3i.down) ? 0 : 4) |
-			(Global.world.IsSolid(position + Vector3i.up) ? 0 : 8) |
-			(Global.world.IsSolid(position + Vector3i.back) ? 0 : 16) |
-			(Global.world.IsSolid(position + Vector3i.forward) ? 0 : 32);
+		return (IsSolid(position + Vector3i.left) ? 0 : 1) |
+			(IsSolid(position + Vector3i.right) ? 0 : 2) |
+			(IsSolid(position + Vector3i.down) ? 0 : 4) |
+			(IsSolid(position + Vector3i.up) ? 0 : 8) |
+			(IsSolid(position + Vector3i.back) ? 0 : 16) |
+			(IsSolid(position + Vector3i.forward) ? 0 : 32);
+	}
+
+	public void Save(string directory)
+	{
+		if (!Directory.Exists(directory))
+			Directory.CreateDirectory(directory);
+		for (int x = 0; x < chunksX; x++)
+			for (int y = 0; y < chunksY; y++)
+				for (int z = 0; z < chunksZ; z++)
+				{
+					chunks[x, y, z].Save(directory + "\\" + x.ToString() + "," + y.ToString() + "," + z.ToString());
+				}
 	}
 }

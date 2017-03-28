@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[System.Serializable]
 public class DynamicBlock : CubeBlock
 {
 	Vector3 precisePosition;

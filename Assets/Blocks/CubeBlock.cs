@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System;
 
+[Serializable]
 public class CubeBlock : Block
 {
 	protected static List<Vector2[][]> textureCoords = new List<Vector2[][]>();

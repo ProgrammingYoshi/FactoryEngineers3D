@@ -4,7 +4,11 @@ using System.Collections.Generic;
 using System;
 using System.Diagnostics;
 using System.Threading;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
+[Serializable]
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
 public class Chunk : MonoBehaviour
 {
@@ -19,6 +23,7 @@ public class Chunk : MonoBehaviour
 	MeshFilter meshFilter;
 	MeshCollider meshCollider;
 	Block[,,] blocks;
+	bool[,,] isNotNull;
 	bool[,,] solids;
 	bool isEmpty = true;
 
@@ -26,6 +31,7 @@ public class Chunk : MonoBehaviour
 	{
 		blocks = new Block[chunkSize, chunkSize, chunkSize];
 		solids = new bool[chunkSize, chunkSize, chunkSize];
+		isNotNull = new bool[chunkSize, chunkSize, chunkSize];
 	}
 
 	void Start()
@@ -66,7 +72,7 @@ public class Chunk : MonoBehaviour
 		for (int x = 0; x < chunkSize; x++)
 			for (int y = 0; y < chunkSize; y++)
 				for (int z = 0; z < chunkSize; z++)
-					if (blocks[x, y, z] != null && blocks[x, y, z].UpdateEveryTick)
+					if (isNotNull[x, y, z] && blocks[x, y, z].UpdateEveryTick)
 					{
 						blocks[x, y, z].Tick(world, this, (float)timeElapsed);
 						Global.statistics.BlockTick();
@@ -93,7 +99,7 @@ public class Chunk : MonoBehaviour
 				for (int z = 0; z < chunkSize; z++)
 				{
 					renderPosition = new Vector3i(x, y, z);
-					if (blocks[x, y, z] != null)
+					if (isNotNull != null)
 						blocks[x, y, z].GetMesh(world.GetFreeSides(renderPosition + (position << log2ChunkSize)), growableMesh, new Vector3(x, y, z));
 				}
 		index += chunkSize;
@@ -115,17 +121,17 @@ public class Chunk : MonoBehaviour
 		switch (side)
 		{
 			case 0:
-				return Global.world.GetBlock(position, this).GetType() != Global.world.GetBlock(position + Vector3i.left, this).GetType();
+				return world.GetBlock(position, this).GetType() != world.GetBlock(position + Vector3i.left, this).GetType();
 			case 1:
-				return Global.world.GetBlock(position, this).GetType() != Global.world.GetBlock(position + Vector3i.right, this).GetType();
+				return world.GetBlock(position, this).GetType() != world.GetBlock(position + Vector3i.right, this).GetType();
 			case 2:
-				return Global.world.GetBlock(position, this).GetType() != Global.world.GetBlock(position + Vector3i.down, this).GetType();
+				return world.GetBlock(position, this).GetType() != world.GetBlock(position + Vector3i.down, this).GetType();
 			case 3:
-				return Global.world.GetBlock(position, this).GetType() != Global.world.GetBlock(position + Vector3i.up, this).GetType();
+				return world.GetBlock(position, this).GetType() != world.GetBlock(position + Vector3i.up, this).GetType();
 			case 4:
-				return Global.world.GetBlock(position, this).GetType() != Global.world.GetBlock(position + Vector3i.back, this).GetType();
+				return world.GetBlock(position, this).GetType() != world.GetBlock(position + Vector3i.back, this).GetType();
 			case 5:
-				return Global.world.GetBlock(position, this).GetType() != Global.world.GetBlock(position + Vector3i.forward, this).GetType();
+				return world.GetBlock(position, this).GetType() != world.GetBlock(position + Vector3i.forward, this).GetType();
 			default:
 				return true;
 		}
@@ -155,6 +161,7 @@ public class Chunk : MonoBehaviour
 		int x = position.x & chunkSizeMask, y = position.y & chunkSizeMask, z = position.z & chunkSizeMask;
 		blocks[x, y, z] = block;
 		solids[x, y, z] = block == null ? false : block.IsSolid;
+		isNotNull[x, y, z] = block != null;
 		render = true;
 		if (x % chunkSize == 0 && x >= chunkSize)
 			world.chunks[x / chunkSize - 1, y / chunkSize, z / chunkSize].render = true;
@@ -177,17 +184,17 @@ public class Chunk : MonoBehaviour
 		switch (side)
 		{
 			case 0:
-				return !(Global.world.IsSolid(position, this) && Global.world.IsSolid(position + Vector3i.left, this));
+				return !(world.IsSolid(position, this) && world.IsSolid(position + Vector3i.left, this));
 			case 1:																		
-				return !(Global.world.IsSolid(position, this) && Global.world.IsSolid(position + Vector3i.right, this));
+				return !(world.IsSolid(position, this) && world.IsSolid(position + Vector3i.right, this));
 			case 2:																		
-				return !(Global.world.IsSolid(position, this) && Global.world.IsSolid(position + Vector3i.down, this));
+				return !(world.IsSolid(position, this) && world.IsSolid(position + Vector3i.down, this));
 			case 3:																		
-				return !(Global.world.IsSolid(position, this) && Global.world.IsSolid(position + Vector3i.up, this));
+				return !(world.IsSolid(position, this) && world.IsSolid(position + Vector3i.up, this));
 			case 4:																		
-				return !(Global.world.IsSolid(position, this) && Global.world.IsSolid(position + Vector3i.back, this));
+				return !(world.IsSolid(position, this) && world.IsSolid(position + Vector3i.back, this));
 			case 5:																		
-				return !(Global.world.IsSolid(position, this) && Global.world.IsSolid(position + Vector3i.forward, this));
+				return !(world.IsSolid(position, this) && world.IsSolid(position + Vector3i.forward, this));
 			default:
 				return true;
 		}
@@ -217,5 +224,30 @@ public class Chunk : MonoBehaviour
 		}
 		else
 			throw new Exception("Block out of chunk");
+	}
+
+	public void Load(string path)
+	{
+		IFormatter formatter = new BinaryFormatter();
+		Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+		for (int x = 0; x < chunkSize; x++)
+			for (int y = 0; y < chunkSize; y++)
+				for (int z = 0; z < chunkSize; z++)
+					if (isNotNull[x, y, z])
+						blocks[x, y, z] = (Block)formatter.Deserialize(stream);
+		stream.Close();
+	}
+
+	public void Save(string path)
+	{
+		IFormatter formatter = new BinaryFormatter();
+		Stream stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
+		for (int x = 0; x < chunkSize; x++)
+			for (int y = 0; y < chunkSize; y++)
+				for (int z = 0; z < chunkSize; z++)
+					if (isNotNull[x, y, z])
+						formatter.Serialize(stream, blocks[x, y, z]);
+		stream.Close();
 	}
 }

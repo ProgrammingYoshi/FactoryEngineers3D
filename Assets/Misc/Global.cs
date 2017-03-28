@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 public static class Global {
-	public static World world;
+	//public static World world;
 	public static Statistics statistics;
 	public static bool mouseLookEnabled = true;
 	public static System.Random rnd = new System.Random();
