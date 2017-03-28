@@ -74,7 +74,7 @@ public struct Vector3i
 	{
 		return !(a.x == b.x && a.y == b.y && a.z == b.z);
 	}
-
+	
 	public static implicit operator Vector3(Vector3i value)
 	{
 		return new Vector3(value.x, value.y, value.z);

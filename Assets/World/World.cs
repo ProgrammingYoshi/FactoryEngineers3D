@@ -14,8 +14,8 @@ public class World : MonoBehaviour
 	public const float gravity = 9.80665F;
 	const float shift = 0.01F;
 	public int chunksX = 8, chunksY = 8, chunksZ = 8, physicsDivisor = 1;
-    Vector3i selectedPosition;
-    bool blockSelected = false;
+	Vector3i selectedPosition;
+	bool blockSelected = false;
 	MeshFilter meshFilter;
 	public Material[] materials;
 	int sizeX, sizeY, sizeZ;
@@ -60,7 +60,7 @@ public class World : MonoBehaviour
 
 	public bool IsSolid(Vector3i position)
 	{
-		if(!IsInWorld(position))
+		if (!IsInWorld(position))
 			throw new System.Exception("Block out of world");
 		return chunks[position.x >> Chunk.log2ChunkSize, position.y >> Chunk.log2ChunkSize, position.z >> Chunk.log2ChunkSize].IsSolid(position);
 	}
@@ -75,7 +75,7 @@ public class World : MonoBehaviour
 	public void Select(Vector3 position, Color color)
 	{
 		position = Global.Floor(position);
-		selectedPosition = (Vector3i) position;
+		selectedPosition = (Vector3i)position;
 		Vector3[] cubeVertices = { new Vector3(-shift, -shift, -shift) + position, new Vector3(1 + shift, -shift, -shift) + position, new Vector3(-shift, 1 + shift, -shift) + position, new Vector3(1 + shift, 1 + shift, -shift) + position, new Vector3(-shift, -shift, 1 + shift) + position, new Vector3(1 + shift, -shift, 1 + shift) + position, new Vector3(-shift, 1 + shift, 1 + shift) + position, new Vector3(1 + shift, 1 + shift, 1 + shift) + position };
 		meshFilter.mesh.vertices = cubeVertices;
 		Color[] cubeColors = { color, color, color, color, color, color, color, color };
@@ -156,7 +156,7 @@ public class World : MonoBehaviour
 			for (int y = 0; y < sizeY; y++)
 				for (int z = 0; z < sizeZ; z++)
 				{
-					if (y / 16F < Mathf.PerlinNoise(x / 32F, z / 32F + Mathf.PerlinNoise(x/17F,z/19F)))
+					if (y / 16F < Mathf.PerlinNoise(x / 32F, z / 32F + Mathf.PerlinNoise(x / 17F, z / 19F)))
 						SetBlock(new Vector3i(x, y, z), new DirtBlock(new Vector3i(x, y, z)));
 					if (x > 5 && z > 4 && y > 16 && x < 10 && y < 20 && z < 9)
 						SetBlock(new Vector3i(x, y, z), new FluidBlock(new Vector3i(x, y, z)));
@@ -185,7 +185,7 @@ public class World : MonoBehaviour
 	{
 		Vector3i relative = start - end;
 		float distance = relative.x + relative.y + relative.z;
-		for(float f = 0; f < 1f; f += 1F / distance)
+		for (float f = 0; f < 1f; f += 1F / distance)
 			if (GetBlock(start + relative * f) != null) return false;
 		return true;
 	}
@@ -259,6 +259,16 @@ public class World : MonoBehaviour
 				for (int z = 0; z < chunksZ; z++)
 				{
 					chunks[x, y, z].Save(directory + "\\" + x.ToString() + "," + y.ToString() + "," + z.ToString());
+				}
+	}
+
+	public void Load(string directory)
+	{
+		for (int x = 0; x < chunksX; x++)
+			for (int y = 0; y < chunksY; y++)
+				for (int z = 0; z < chunksZ; z++)
+				{
+					chunks[x, y, z].Load(directory + "\\" + x.ToString() + "," + y.ToString() + "," + z.ToString());
 				}
 	}
 }

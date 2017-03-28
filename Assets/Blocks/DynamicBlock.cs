@@ -4,7 +4,9 @@ using System.Collections;
 [System.Serializable]
 public class DynamicBlock : CubeBlock
 {
+	[System.NonSerialized]
 	Vector3 precisePosition;
+	[System.NonSerialized]
 	Vector3 velocity;
 
 	public override bool IsSolid

@@ -5,8 +5,8 @@ using System;
 [Serializable]
 public class CubeBlock : Block
 {
-	protected static List<Vector2[][]> textureCoords = new List<Vector2[][]>();
-	protected static Vector3[][] blockCoordinates =
+	protected static readonly List<Vector2[][]> textureCoords = new List<Vector2[][]>();
+	protected static readonly Vector3[][] blockCoordinates =
 	{
 		new Vector3[] {new Vector3(0,0,0),new Vector3(0,1,0),new Vector3(0,0,1),new Vector3(0,1,1)},
 		new Vector3[] {new Vector3(1,0,0),new Vector3(1,1,0),new Vector3(1,0,1),new Vector3(1,1,1)},
@@ -16,7 +16,7 @@ public class CubeBlock : Block
 		new Vector3[] {new Vector3(0,0,1),new Vector3(1,0,1),new Vector3(0,1,1),new Vector3(1,1,1)},
 		new Vector3[] {},
 	};
-	protected static Color[][] colors =
+	protected static readonly Color[][] colors =
 	{
 		new Color[] {new Color(0,1,0),new Color(0,0,1),new Color(1,0,0),new Color(1,1,1),},
 		new Color[] {new Color(0,1,0),new Color(0,0,1),new Color(1,0,0),new Color(1,1,1),},
@@ -26,7 +26,7 @@ public class CubeBlock : Block
 		new Color[] {new Color(0,1,0),new Color(0,0,1),new Color(1,0,0),new Color(1,1,1),},
 		new Color[] {},
 	};
-	protected static Vector2[][] uvTemplate =
+	protected static readonly Vector2[][] uvTemplate =
 	{
 		new Vector2[] { new Vector2(0,0), new Vector2(1,0), new Vector2(0,1), new Vector2(1,1), },
 		new Vector2[] { new Vector2(0,0), new Vector2(1,0), new Vector2(0,1), new Vector2(1,1), },
@@ -37,7 +37,7 @@ public class CubeBlock : Block
 		new Vector2[] {},
 	};
 	//-X +X -Y +Y -Z +Z 0,0 0,1 1,0 1,1
-	protected static int[][] blockSides =
+	protected static readonly int[][] blockSides =
 	{
 		new int[] {0,2,1,1,2,3,},
 		new int[] {0,1,2,1,3,2,},

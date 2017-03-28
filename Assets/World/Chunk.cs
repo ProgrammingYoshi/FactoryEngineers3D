@@ -99,7 +99,7 @@ public class Chunk : MonoBehaviour
 				for (int z = 0; z < chunkSize; z++)
 				{
 					renderPosition = new Vector3i(x, y, z);
-					if (isNotNull != null)
+					if (isNotNull[x, y, z])
 						blocks[x, y, z].GetMesh(world.GetFreeSides(renderPosition + (position << log2ChunkSize)), growableMesh, new Vector3(x, y, z));
 				}
 		index += chunkSize;
@@ -230,24 +230,31 @@ public class Chunk : MonoBehaviour
 	{
 		IFormatter formatter = new BinaryFormatter();
 		Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-
-		for (int x = 0; x < chunkSize; x++)
+		isNotNull = (bool[,,])formatter.Deserialize(stream);
+		blocks = (Block[,,])formatter.Deserialize(stream);
+		/*for (int x = 0; x < chunkSize; x++)
 			for (int y = 0; y < chunkSize; y++)
 				for (int z = 0; z < chunkSize; z++)
 					if (isNotNull[x, y, z])
+					{
 						blocks[x, y, z] = (Block)formatter.Deserialize(stream);
+						solids[x, y, z] = blocks[x, y, z] == null ? false : blocks[x, y, z].IsSolid;
+					}*/
 		stream.Close();
+		render = true;
 	}
 
 	public void Save(string path)
 	{
 		IFormatter formatter = new BinaryFormatter();
 		Stream stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
-		for (int x = 0; x < chunkSize; x++)
+		formatter.Serialize(stream, isNotNull);
+		formatter.Serialize(stream, blocks);
+		/*for (int x = 0; x < chunkSize; x++)
 			for (int y = 0; y < chunkSize; y++)
 				for (int z = 0; z < chunkSize; z++)
 					if (isNotNull[x, y, z])
-						formatter.Serialize(stream, blocks[x, y, z]);
+						formatter.Serialize(stream, blocks[x, y, z]);*/
 		stream.Close();
 	}
 }
