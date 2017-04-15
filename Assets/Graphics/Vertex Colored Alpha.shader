@@ -1,4 +1,6 @@
-﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
 
 Shader "Vertex Color Alpha" {
 	Properties{
@@ -46,7 +48,7 @@ Shader "Vertex Color Alpha" {
 				v2f vert(appdata_t v)
 				{
 					v2f o;
-					o.processedVertex = mul(UNITY_MATRIX_MVP, v.vertex);
+					o.processedVertex = UnityObjectToClipPos(v.vertex);
 					float3 pos = (_WorldSpaceCameraPos - mul(unity_ObjectToWorld, v.vertex)) * (_WorldSpaceCameraPos - mul(unity_ObjectToWorld, v.vertex));
 					o.distance = pow(pos.x + pos.y + pos.z, 0.5);
 					o.color = v.color;

@@ -232,14 +232,6 @@ public class Chunk : MonoBehaviour
 		Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 		isNotNull = (bool[,,])formatter.Deserialize(stream);
 		blocks = (Block[,,])formatter.Deserialize(stream);
-		/*for (int x = 0; x < chunkSize; x++)
-			for (int y = 0; y < chunkSize; y++)
-				for (int z = 0; z < chunkSize; z++)
-					if (isNotNull[x, y, z])
-					{
-						blocks[x, y, z] = (Block)formatter.Deserialize(stream);
-						solids[x, y, z] = blocks[x, y, z] == null ? false : blocks[x, y, z].IsSolid;
-					}*/
 		stream.Close();
 		render = true;
 	}
@@ -250,11 +242,6 @@ public class Chunk : MonoBehaviour
 		Stream stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
 		formatter.Serialize(stream, isNotNull);
 		formatter.Serialize(stream, blocks);
-		/*for (int x = 0; x < chunkSize; x++)
-			for (int y = 0; y < chunkSize; y++)
-				for (int z = 0; z < chunkSize; z++)
-					if (isNotNull[x, y, z])
-						formatter.Serialize(stream, blocks[x, y, z]);*/
 		stream.Close();
 	}
 }

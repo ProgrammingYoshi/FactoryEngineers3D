@@ -258,7 +258,7 @@ public class World : MonoBehaviour
 			for (int y = 0; y < chunksY; y++)
 				for (int z = 0; z < chunksZ; z++)
 				{
-					chunks[x, y, z].Save(directory + "\\" + x.ToString() + "," + y.ToString() + "," + z.ToString());
+					chunks[x, y, z].Save(string.Format("{0}\\{1},{2},{3}", directory, x.ToString(), y.ToString(), z.ToString()));
 				}
 	}
 
@@ -268,7 +268,7 @@ public class World : MonoBehaviour
 			for (int y = 0; y < chunksY; y++)
 				for (int z = 0; z < chunksZ; z++)
 				{
-					chunks[x, y, z].Load(directory + "\\" + x.ToString() + "," + y.ToString() + "," + z.ToString());
+					chunks[x, y, z].Load(string.Format("{0}\\{1},{2},{3}", directory, x.ToString(), y.ToString(), z.ToString()));
 				}
 	}
 }
