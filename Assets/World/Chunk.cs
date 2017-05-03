@@ -66,6 +66,8 @@ public class Chunk : MonoBehaviour
 			Thread thread = new Thread(_InternalTickChunk);
 			thread.Start(timeElapsed);
 		}
+		else
+			world.chunkTickCount++;
 	}
 	void _InternalTickChunk(object timeElapsed)
 	{
@@ -78,6 +80,7 @@ public class Chunk : MonoBehaviour
 						Global.statistics.BlockTick();
 					}
 		Global.statistics.AddBlockTickTime((float)timeElapsed);
+		world.chunkTickCount++;
 	}
 	public void UpdateChunk()
 	{

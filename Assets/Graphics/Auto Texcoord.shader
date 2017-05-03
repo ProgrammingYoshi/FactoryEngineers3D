@@ -1,11 +1,13 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
 
-// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+
 
 Shader "Auto Texcoord" {
 	Properties{
 		_Color("Color", Color) = (1.0,1.0,1.0,1.0)
-		_Texture("Texture", 2D) = "white"
+		_Texture("Texture", 3D) = "white"
 		_MinimumBrightness("Minimum Brightness", Float) = 0.1
 	}
 
@@ -25,9 +27,10 @@ Shader "Auto Texcoord" {
 #pragma vertex vert
 #pragma fragment frag
 #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
+#include "UnityCG.cginc"
 
 		fixed4 _Color;
-	uniform sampler2D _Texture;
+	uniform sampler3D _Texture;
 	fixed _MinimumBrightness;
 
 	struct appdata_t {
@@ -55,7 +58,7 @@ Shader "Auto Texcoord" {
 		o.color = v.color;
 		o.texcoord = fixed4(v.vertex.xy, 0, 0);
 		o.normal = v.normal;
-		o.vertex = float4(mul(unity_ObjectToWorld, v.vertex).xyz,1);
+		o.vertex = mul(unity_ObjectToWorld, v.vertex);
 		return o;
 	}
 
@@ -64,10 +67,19 @@ Shader "Auto Texcoord" {
 		//discard;
 		//i.color.xyz *= 1 / (i.distance / 10);
 		//return _Color * tex2D(_Texture, clamp(i.texcoord - floor(i.texcoord * 16) / 16, 4.0 / 1024.0, 60.0 / 1024.0) + floor(i.texcoord * 16) / 16); //Prevents texture issues
-		fixed4 color = _Color * tex2D(_Texture, i.vertex.xy);//i.texcoord);
+		fixed4 color = _Color * tex3D(_Texture, i.vertex *4 + _SinTime);//i.texcoord);
 	return fixed4(color.xyzw);// *max(dot(i.normal, _WorldSpaceLightPos0.xyz), _MinimumBrightness), color.w);
 	}
-		ENDCG
+	/*float4 vert(appdata_base v) : POSITION
+	{
+		return UnityObjectToClipPos(v.vertex);
+	}
+
+	fixed4 frag(float4 sp:WPOS) : COLOR
+	{
+		return tex2D(_Texture, fixed4(sp.xy / _ScreenParams.xy * 4,0.0,1.0));
+	}*/
+	ENDCG
 	}
 	}
 	}

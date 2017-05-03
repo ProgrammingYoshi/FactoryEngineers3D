@@ -123,6 +123,7 @@ public class World : MonoBehaviour
 	int cnt = 0;
 	Stopwatch timer = new Stopwatch();
 	long thisFrame = 0, lastFrame = 0;
+	public int chunkTickCount = 0;
 	void Update()
 	{
 		timer.Start();
@@ -137,18 +138,29 @@ public class World : MonoBehaviour
 						chunks[x, y, z].TickChunk((thisFrame - lastFrame) / 10000000F);
 					}
 			lastFrame = thisFrame;
-			Tick();
-			//while (chunksRendered < chunksX * chunksY * chunksZ) ;
+			for (int i = 0; i < 100; i++)
+			{
+				;
+			}
+			int tmp = 0;
+			System.Threading.Thread.
+			while (tmp < 1000 && chunkTickCount < chunksX * chunksY * chunksZ) { tmp++; System.Threading.Thread.Sleep(1); }
+			int ctc = chunkTickCount;
+			UnityEngine.Debug.Log(ctc);
+			UnityEngine.Debug.Log(ctc < chunksX * chunksY * chunksZ);
 			cnt = 0;
-		}
+			chunkTickCount = 0;
+			//while (chunkTickCount < chunksX * chunksY * chunksZ) ;
+			Tick();
+        }
 		cnt++;
-		for (int x = 0; x < chunksX; x++)
+        for (int x = 0; x < chunksX; x++)
 			for (int y = 0; y < chunksY; y++)
 				for (int z = 0; z < chunksZ; z++)
 				{
 					chunks[x, y, z].UpdateChunk();
 				}
-	}
+    }
 
 	void Generate()
 	{
@@ -158,13 +170,14 @@ public class World : MonoBehaviour
 				{
 					if (y / 16F < Mathf.PerlinNoise(x / 32F, z / 32F + Mathf.PerlinNoise(x / 17F, z / 19F)))
 						SetBlock(new Vector3i(x, y, z), new DirtBlock(new Vector3i(x, y, z)));
-					if (x > 5 && z > 4 && y > 16 && x < 10 && y < 20 && z < 9)
+					if (x > 5 && z > 4 && y > 16 && x < 15 && y < 30 && z < 19)
 						SetBlock(new Vector3i(x, y, z), new FluidBlock(new Vector3i(x, y, z)));
 					/*if (y == 0)//if (y < 10 && Mathf.Sin(x) * Mathf.Sin(y / 2) * Mathf.Sin(z) > 0)
 						SetBlock(new Vector3i(x, y, z), new DirtBlock(new Vector3i(x, y, z)));*/
 				}
 	}
 
+	Stopwatch placeTime = new Stopwatch();
 	void Tick()
 	{
 		/*for (int x = 0; x < sizeX; x++)
@@ -172,13 +185,26 @@ public class World : MonoBehaviour
 				for (int z = 0; z < sizeZ; z++)
 					if (blocks[x, y, z] != null && blocks[x, y, z].UpdateEveryTick)
 							blocks[x, y, z].Tick(this, 10000000F / (thisFrame - lastFrame));*/
-		foreach (KeyValuePair<Vector3i, Vector3i> swap in blocksToSwap)
+		placeTime.Start();
+		Vector3i a, b;
+		for (int i = 0; i < blocksToSwap.Count; i++)
+		{
+			a = blocksToSwap[i].Key;
+			b = blocksToSwap[i].Value;
+			Block tmp = GetBlock(new Vector3i(a.x, a.y, a.z));
+			SetBlock(a, GetBlock(new Vector3i(b.x, b.y, b.z)));
+			SetBlock(b, tmp);
+		}
+		/*foreach (KeyValuePair<Vector3i, Vector3i> swap in blocksToSwap)
 		{
 			Block tmp = GetBlock(new Vector3i(swap.Value.x, swap.Value.y, swap.Value.z));
 			SetBlock(swap.Value, GetBlock(new Vector3i(swap.Key.x, swap.Key.y, swap.Key.z)));
 			SetBlock(swap.Key, tmp);
-		}
+		}*/
 		blocksToSwap.Clear();
+		placeTime.Stop();
+		UnityEngine.Debug.Log(placeTime.ElapsedMilliseconds);
+		placeTime.Reset();
 	}
 
 	public bool CanTravel(Vector3i start, Vector3i end)
