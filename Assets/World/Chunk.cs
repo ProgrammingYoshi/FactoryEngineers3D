@@ -69,6 +69,7 @@ public class Chunk : MonoBehaviour
 		else
 			world.chunkTickCount++;
 	}
+
 	void _InternalTickChunk(object timeElapsed)
 	{
 		for (int x = 0; x < chunkSize; x++)
@@ -76,10 +77,17 @@ public class Chunk : MonoBehaviour
 				for (int z = 0; z < chunkSize; z++)
 					if (isNotNull[x, y, z] && blocks[x, y, z].UpdateEveryTick)
 					{
-						blocks[x, y, z].Tick(world, this, (float)timeElapsed);
-						Global.statistics.BlockTick();
+						try
+						{
+							blocks[x, y, z].Tick(world, this, (float)timeElapsed);
+							//Global.statistics.BlockTick();
+						}
+						catch(Exception ex)
+						{
+							File.WriteAllText(DateTime.Now.Ticks.ToString(), ex.ToString());
+						}
 					}
-		Global.statistics.AddBlockTickTime((float)timeElapsed);
+		//Global.statistics.AddBlockTickTime((float)timeElapsed);
 		world.chunkTickCount++;
 	}
 	public void UpdateChunk()
@@ -90,7 +98,7 @@ public class Chunk : MonoBehaviour
 			render = false;
 		}
 	}
-
+	
 	void RefreshChunk()
 	{
 		Global.statistics.ChunkRender();
@@ -98,7 +106,7 @@ public class Chunk : MonoBehaviour
 		Vector3i renderPosition;
 		int index = 0;
 		for (int x = 0; x < chunkSize; x++) //TODO: Multithread this
-			for (int y = 0; y < chunkSize; y++)
+			for (int y = 0; y < chunkSize; y++) //TODO: For real do multithread this
 				for (int z = 0; z < chunkSize; z++)
 				{
 					renderPosition = new Vector3i(x, y, z);

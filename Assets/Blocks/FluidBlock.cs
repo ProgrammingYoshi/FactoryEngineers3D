@@ -51,9 +51,9 @@ public class FluidBlock : CubeBlock
 		Block blockBesidesThis;
 		if (world.IsInWorld(BlockUnderThisPosition) && (blockUnderThis == null || !blockUnderThis.IsSolid && Density > blockUnderThis.Density))
 			world.SwapBlocks(position, BlockUnderThisPosition);
-		else if (Global.rnd.Next(0, 4) == 0)
+		else if (/*Global.rnd.*/StaticRandom.Next(4) == 0)
 		{
-			switch (Global.rnd.Next(0, 4))
+			switch (/*Global.rnd.*/StaticRandom.Next(4))
 			{
 				case 0:
 					BlockBesidesThisPosition = position + Vector3i.right;

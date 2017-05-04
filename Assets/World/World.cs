@@ -6,6 +6,7 @@ using System;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
+using System.Collections.Concurrent;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 [Serializable]
@@ -21,7 +22,7 @@ public class World : MonoBehaviour
 	int sizeX, sizeY, sizeZ;
 	public Chunk[,,] chunks;
 	GameObject[,,] renderGrids;
-	List<KeyValuePair<Vector3i, Vector3i>> blocksToSwap = new List<KeyValuePair<Vector3i, Vector3i>>();
+	ConcurrentQueue<KeyValuePair<Vector3i, Vector3i>> blocksToSwap = new ConcurrentQueue<KeyValuePair<Vector3i, Vector3i>>();
 	public int SizeX { get { return sizeX; } }
 	public int SizeY { get { return sizeY; } }
 	public int SizeZ { get { return sizeZ; } }
@@ -92,6 +93,8 @@ public class World : MonoBehaviour
 
 	void Start()
 	{
+		chunkTickCount = chunksX * chunksY * chunksZ;
+
 		meshFilter = GetComponent<MeshFilter>();
 		Vector3[] cubeVertices = { new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(1, 1, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 1), new Vector3(0, 1, 1), new Vector3(1, 1, 1) };
 		meshFilter.mesh.vertices = cubeVertices;
@@ -120,48 +123,6 @@ public class World : MonoBehaviour
 		Generate();
 	}
 
-	int cnt = 0;
-	Stopwatch timer = new Stopwatch();
-	long thisFrame = 0, lastFrame = 0;
-	public int chunkTickCount = 0;
-	void Update()
-	{
-		timer.Start();
-
-		if (cnt == physicsDivisor)
-		{
-			thisFrame = timer.ElapsedTicks;
-			for (int x = 0; x < chunksX; x++)
-				for (int y = 0; y < chunksY; y++)
-					for (int z = 0; z < chunksZ; z++)
-					{
-						chunks[x, y, z].TickChunk((thisFrame - lastFrame) / 10000000F);
-					}
-			lastFrame = thisFrame;
-			for (int i = 0; i < 100; i++)
-			{
-				;
-			}
-			int tmp = 0;
-			System.Threading.Thread.
-			while (tmp < 1000 && chunkTickCount < chunksX * chunksY * chunksZ) { tmp++; System.Threading.Thread.Sleep(1); }
-			int ctc = chunkTickCount;
-			UnityEngine.Debug.Log(ctc);
-			UnityEngine.Debug.Log(ctc < chunksX * chunksY * chunksZ);
-			cnt = 0;
-			chunkTickCount = 0;
-			//while (chunkTickCount < chunksX * chunksY * chunksZ) ;
-			Tick();
-        }
-		cnt++;
-        for (int x = 0; x < chunksX; x++)
-			for (int y = 0; y < chunksY; y++)
-				for (int z = 0; z < chunksZ; z++)
-				{
-					chunks[x, y, z].UpdateChunk();
-				}
-    }
-
 	void Generate()
 	{
 		for (int x = 0; x < sizeX; x++)
@@ -170,14 +131,47 @@ public class World : MonoBehaviour
 				{
 					if (y / 16F < Mathf.PerlinNoise(x / 32F, z / 32F + Mathf.PerlinNoise(x / 17F, z / 19F)))
 						SetBlock(new Vector3i(x, y, z), new DirtBlock(new Vector3i(x, y, z)));
-					if (x > 5 && z > 4 && y > 16 && x < 15 && y < 30 && z < 19)
+					if (x > 5 && y > 15 && z > 5 && x < 25 && y < 35 && z < 25)
 						SetBlock(new Vector3i(x, y, z), new FluidBlock(new Vector3i(x, y, z)));
 					/*if (y == 0)//if (y < 10 && Mathf.Sin(x) * Mathf.Sin(y / 2) * Mathf.Sin(z) > 0)
 						SetBlock(new Vector3i(x, y, z), new DirtBlock(new Vector3i(x, y, z)));*/
 				}
 	}
 
-	Stopwatch placeTime = new Stopwatch();
+	int cnt = 0;
+	Stopwatch timer = new Stopwatch();
+	Stopwatch test = new Stopwatch();
+	long thisFrame = 0, lastFrame = 0;
+	public int chunkTickCount;
+	void Update()
+	{
+		timer.Start();
+		if (cnt >= physicsDivisor)
+		{
+			cnt = 0;
+			if (true)
+			{
+				Tick();
+				chunkTickCount = 0;
+				thisFrame = timer.ElapsedTicks;
+				for (int x = 0; x < chunksX; x++)
+					for (int y = 0; y < chunksY; y++)
+						for (int z = 0; z < chunksZ; z++)
+							chunks[x, y, z].TickChunk((Time.deltaTime/*thisFrame - lastFrame*/) /*/ 10000000F*/);
+				lastFrame = thisFrame;
+			}
+			/*test.Start();*/
+			for (int x = 0; x < chunksX; x++)
+				for (int y = 0; y < chunksY; y++)
+					for (int z = 0; z < chunksZ; z++)
+						chunks[x, y, z].UpdateChunk();
+			/*test.Stop();
+			UnityEngine.Debug.Log(test.ElapsedMilliseconds);
+			test.Reset();*/
+		}
+		cnt++;
+	}
+
 	void Tick()
 	{
 		/*for (int x = 0; x < sizeX; x++)
@@ -185,12 +179,14 @@ public class World : MonoBehaviour
 				for (int z = 0; z < sizeZ; z++)
 					if (blocks[x, y, z] != null && blocks[x, y, z].UpdateEveryTick)
 							blocks[x, y, z].Tick(this, 10000000F / (thisFrame - lastFrame));*/
-		placeTime.Start();
 		Vector3i a, b;
-		for (int i = 0; i < blocksToSwap.Count; i++)
+		KeyValuePair<Vector3i, Vector3i> kvp;
+		//for (int i = 0; i < blocksToSwap.Count; i++)
+		while(!blocksToSwap.IsEmpty)
 		{
-			a = blocksToSwap[i].Key;
-			b = blocksToSwap[i].Value;
+			blocksToSwap.TryDequeue(out kvp);
+			a = kvp.Key;
+			b = kvp.Value;
 			Block tmp = GetBlock(new Vector3i(a.x, a.y, a.z));
 			SetBlock(a, GetBlock(new Vector3i(b.x, b.y, b.z)));
 			SetBlock(b, tmp);
@@ -201,10 +197,6 @@ public class World : MonoBehaviour
 			SetBlock(swap.Value, GetBlock(new Vector3i(swap.Key.x, swap.Key.y, swap.Key.z)));
 			SetBlock(swap.Key, tmp);
 		}*/
-		blocksToSwap.Clear();
-		placeTime.Stop();
-		UnityEngine.Debug.Log(placeTime.ElapsedMilliseconds);
-		placeTime.Reset();
 	}
 
 	public bool CanTravel(Vector3i start, Vector3i end)
@@ -240,7 +232,7 @@ public class World : MonoBehaviour
 	/// <param name="b"></param>
 	public void SwapBlocks(Vector3i a, Vector3i b)
 	{
-		blocksToSwap.Add(new KeyValuePair<Vector3i, Vector3i>(a, b));
+		blocksToSwap.Enqueue(new KeyValuePair<Vector3i, Vector3i>(a, b));
 	}
 
 	public bool IsInWorld(Vector3i position)
