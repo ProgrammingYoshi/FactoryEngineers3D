@@ -146,7 +146,7 @@ public class World : MonoBehaviour
 	void Update()
 	{
 		timer.Start();
-		if (cnt >= physicsDivisor)
+		if (true || cnt >= physicsDivisor)
 		{
 			cnt = 0;
 			if (true)

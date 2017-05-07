@@ -98,13 +98,17 @@ public class Chunk : MonoBehaviour
 			render = false;
 		}
 	}
-	
+
+	Stopwatch test = new Stopwatch();
 	void RefreshChunk()
 	{
 		Global.statistics.ChunkRender();
 		GrowableMesh growableMesh = new GrowableMesh();
 		Vector3i renderPosition;
 		int index = 0;
+
+		test.Start();
+
 		for (int x = 0; x < chunkSize; x++) //TODO: Multithread this
 			for (int y = 0; y < chunkSize; y++) //TODO: For real do multithread this
 				for (int z = 0; z < chunkSize; z++)
@@ -113,6 +117,11 @@ public class Chunk : MonoBehaviour
 					if (isNotNull[x, y, z])
 						blocks[x, y, z].GetMesh(world.GetFreeSides(renderPosition + (position << log2ChunkSize)), growableMesh, new Vector3(x, y, z));
 				}
+
+		test.Stop();
+		UnityEngine.Debug.Log(test.ElapsedMilliseconds);
+		test.Reset();
+
 		index += chunkSize;
 		Mesh colliderMesh = new Mesh();
 		colliderMesh.vertices = growableMesh.GetVertices();
