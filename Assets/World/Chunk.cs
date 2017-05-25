@@ -90,6 +90,7 @@ public class Chunk : MonoBehaviour
 		//Global.statistics.AddBlockTickTime((float)timeElapsed);
 		world.chunkTickCount++;
 	}
+
 	public void UpdateChunk()
 	{
 		if (!isEmpty && render)
@@ -100,6 +101,7 @@ public class Chunk : MonoBehaviour
 	}
 
 	Stopwatch test = new Stopwatch();
+	public int threadFinishCount = 0;
 	void RefreshChunk()
 	{
 		Global.statistics.ChunkRender();
@@ -108,21 +110,19 @@ public class Chunk : MonoBehaviour
 		int index = 0;
 
 		test.Start();
-
 		for (int x = 0; x < chunkSize; x++) //TODO: Multithread this
 			for (int y = 0; y < chunkSize; y++) //TODO: For real do multithread this
 				for (int z = 0; z < chunkSize; z++)
 				{
 					renderPosition = new Vector3i(x, y, z);
 					if (isNotNull[x, y, z])
-						blocks[x, y, z].GetMesh(world.GetFreeSides(renderPosition + (position << log2ChunkSize)), growableMesh, new Vector3(x, y, z));
+					{
+						int freeSides = world.GetFreeSides(renderPosition + (position << log2ChunkSize));
+						blocks[x, y, z].GetMesh(freeSides, growableMesh, new Vector3(x, y, z));
+					}
 				}
 
 		test.Stop();
-		if(test.ElapsedMilliseconds > 10)
-		UnityEngine.Debug.Log(test.ElapsedMilliseconds);
-		test.Reset();
-
 		index += chunkSize;
 		Mesh colliderMesh = new Mesh();
 		colliderMesh.vertices = growableMesh.GetVertices();
@@ -135,8 +135,11 @@ public class Chunk : MonoBehaviour
 		mesh.uv = growableMesh.GetUvs();
 		mesh.RecalculateNormals(); //TODO: Add normals to block class
 		meshFilter.mesh = mesh;
+		if (test.ElapsedMilliseconds > 0)
+			UnityEngine.Debug.Log(test.ElapsedMilliseconds);
+		test.Reset();
 	}
-
+	
 	bool IsSideFree(Vector3i position, int side)
 	{
 		switch (side)
@@ -159,7 +162,7 @@ public class Chunk : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Gets a block in this Chunk.
+	/// Gets a block in this chunk.
 	/// </summary>
 	/// <param name="position">In world coordinates</param>
 	public Block GetBlock(Vector3i position)
@@ -170,7 +173,17 @@ public class Chunk : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Sets a block in this Chunk.
+	/// Gets a block in this chunk and has no error checking
+	/// </summary>
+	/// <param name="position">In chunk or world coordinates</param>
+	/// <returns></returns>
+	public Block GetBlockNoError(Vector3i position)
+	{
+		return blocks[position.x & chunkSizeMask, position.y & chunkSizeMask, position.z & chunkSizeMask];
+	}
+
+	/// <summary>
+	/// Sets a block in this chunk.
 	/// </summary>
 	/// <param name="position">In world coordinates</param>
 	public void SetBlock(Vector3i position, Block block)
@@ -239,7 +252,7 @@ public class Chunk : MonoBehaviour
 
 	public bool IsSolid(Vector3i position)
 	{
-		if (IsInChunk(position - this.position * 8))
+		if (IsInChunk(position - (this.position << log2ChunkSize)))
 		{
 			return solids[position.x & chunkSizeMask, position.y & chunkSizeMask, position.z & chunkSizeMask];
 		}

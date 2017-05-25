@@ -6,7 +6,11 @@ using System;
 public struct Vector3i
 {
 	public static readonly Vector3i zero = new Vector3i(0, 0, 0), right = new Vector3i(1, 0, 0), left = new Vector3i(-1, 0, 0), up = new Vector3i(0, 1, 0), down = new Vector3i(0, -1, 0), front = new Vector3i(0, 0, 1), back = new Vector3i(0, 0, -1);
-    public int x, y, z;
+	public static readonly Vector3i[] sides = new Vector3i[]
+	{
+		left, right, down, up, back, front
+	};
+	public int x, y, z;
 	
 	public Vector3i(int x, int y, int z)
 	{

@@ -27,6 +27,7 @@ public class World : MonoBehaviour
 	public int SizeY { get { return sizeY; } }
 	public int SizeZ { get { return sizeZ; } }
 	public Vector3 SelectedPosition { get { return selectedPosition; } }
+
 	public Block BlockAtSelection
 	{
 		get
@@ -45,6 +46,11 @@ public class World : MonoBehaviour
 			return chunks[position.x >> Chunk.log2ChunkSize, position.y >> Chunk.log2ChunkSize, position.z >> Chunk.log2ChunkSize].GetBlock(position);
 		else
 			return null;
+	}
+
+	public Block GetBlockNoError(Vector3i position)
+	{
+		return chunks[position.x >> Chunk.log2ChunkSize, position.y >> Chunk.log2ChunkSize, position.z >> Chunk.log2ChunkSize].GetBlock(position);
 	}
 
 	public Block GetBlock(Vector3i position, Chunk chunk)
@@ -112,7 +118,7 @@ public class World : MonoBehaviour
 			for (int y = 0; y < chunksY; y++)
 				for (int z = 0; z < chunksZ; z++)
 				{
-					renderGrids[x, y, z] = new GameObject("Chunk " + (x + y * chunksX + z * chunksY * chunksX), typeof(Chunk));
+					renderGrids[x, y, z] = new GameObject("Chunk " + (x + y * chunksX + z * chunksX * chunksY), typeof(Chunk));
 					renderGrids[x, y, z].GetComponent<MeshRenderer>().materials = materials;
 					renderGrids[x, y, z].transform.position = new Vector3(x * Chunk.chunkSize, y * Chunk.chunkSize, z * Chunk.chunkSize);
 					Chunk chunk = renderGrids[x, y, z].GetComponent<Chunk>();
@@ -142,7 +148,6 @@ public class World : MonoBehaviour
 
 	int cnt = 0;
 	Stopwatch timer = new Stopwatch();
-	Stopwatch test = new Stopwatch();
 	long thisFrame = 0, lastFrame = 0;
 	public int chunkTickCount;
 	void Update()
@@ -247,27 +252,49 @@ public class World : MonoBehaviour
 		return GetBlock(position) != null;
 	}
 
-	public int GetFreeSides(Vector3i position)
+	public bool IsBlockThereNoError(Vector3i position)
+	{
+		return GetBlockNoError(position) != null;
+	}
+
+	public int GetFreeSides2(Vector3i position)
 	{
 		if (GetBlock(position) == null)
 			UnityEngine.Debug.Log(position);
 		Type blockType = GetBlock(position).GetType();
-		return (IsBlockThere(position + Vector3i.left) && GetBlock(position + Vector3i.left).GetType() == blockType ? 0 : 1) |
+		int value = 0;
+		Vector3i pos;
+		for (int i = 0; i < 6; i++)
+		{
+			pos = Vector3i.sides[i];
+			if (IsInWorld(pos))
+				value |= /*IsBlockThereNoError(pos) && GetBlockNoError(pos).GetType() == blockType*/ IsSolid(position) ? 0 : 1 << i;
+        }
+		return value;
+		/*return (IsBlockThere(position + Vector3i.left) && GetBlock(position + Vector3i.left).GetType() == blockType ? 0 : 1) |
 			(IsBlockThere(position + Vector3i.right) && GetBlock(position + Vector3i.right).GetType() == blockType ? 0 : 2) |
 			(IsBlockThere(position + Vector3i.down) && GetBlock(position + Vector3i.down).GetType() == blockType ? 0 : 4) |
 			(IsBlockThere(position + Vector3i.up) && GetBlock(position + Vector3i.up).GetType() == blockType ? 0 : 8) |
 			(IsBlockThere(position + Vector3i.back) && GetBlock(position + Vector3i.back).GetType() == blockType ? 0 : 16) |
-			(IsBlockThere(position + Vector3i.front) && GetBlock(position + Vector3i.front).GetType() == blockType ? 0 : 32);
+			(IsBlockThere(position + Vector3i.front) && GetBlock(position + Vector3i.front).GetType() == blockType ? 0 : 32);*/
 	}
 
-	public int GetFreeSides2(Vector3i position) //TODO
+	public int GetFreeSides(Vector3i position) //TODO
 	{
-		return (IsSolid(position + Vector3i.left) ? 0 : 1) |
+		int value = 0;
+		Vector3i pos;
+		for (int i = 0; i < 6; i++)
+		{
+			pos = Vector3i.sides[i] + position;
+			value |= IsInWorld(pos) && IsSolid(pos) | !IsInWorld(pos) ? 0 : 1 << i;
+		}
+		return value;
+		/*return (IsSolid(position + Vector3i.left) ? 0 : 1) |
 			(IsSolid(position + Vector3i.right) ? 0 : 2) |
 			(IsSolid(position + Vector3i.down) ? 0 : 4) |
 			(IsSolid(position + Vector3i.up) ? 0 : 8) |
 			(IsSolid(position + Vector3i.back) ? 0 : 16) |
-			(IsSolid(position + Vector3i.front) ? 0 : 32);
+			(IsSolid(position + Vector3i.front) ? 0 : 32);*/
 	}
 
 	public void Save(string directory)
