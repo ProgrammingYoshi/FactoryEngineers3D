@@ -2,13 +2,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class GrowableMesh
 {
-	List<Vector3> vertices = new List<Vector3>();
-	List<int> indices = new List<int>();
-	List<Color> colors = new List<Color>();
-	List<Vector2> uvs = new List<Vector2>();
+	LinkedList<Vector3> vertices = new LinkedList<Vector3>(); //TODO: Check Query vs LinkedList vs List in speed
+	LinkedList<int> indices = new LinkedList<int>();
+	LinkedList<Color> colors = new LinkedList<Color>();
+	LinkedList<Vector2> uvs = new LinkedList<Vector2>();
 	int lastIndex = 0;
 
 	public Vector3[] GetVertices()
@@ -36,13 +37,13 @@ public class GrowableMesh
 		if (meshPiece.vertices.Length > 0 && meshPiece.indices.Length > 0)
 		{
 			for (int i = 0; i < meshPiece.vertices.Length; i++)
-				vertices.Add(meshPiece.vertices[i] + position);
+				vertices.AddLast(meshPiece.vertices[i] + position);
 			for (int i = 0; i < meshPiece.indices.Length; i++)
-				indices.Add(meshPiece.indices[i] + lastIndex);
+				indices.AddLast(meshPiece.indices[i] + lastIndex);
 			for (int i = 0; i < meshPiece.colors.Length; i++)
-				colors.Add(meshPiece.colors[i]);
+				colors.AddLast(meshPiece.colors[i]);
 			for (int i = 0; i < meshPiece.uvs.Length; i++)
-				uvs.Add(meshPiece.uvs[i]);
+				uvs.AddLast(meshPiece.uvs[i]);
 			lastIndex += meshPiece.vertices.Length;
 		}
 	}
@@ -51,13 +52,13 @@ public class GrowableMesh
 		if (vertices.Length > 0 && indices.Length > 0)
 		{
 			for (int i = 0; i < vertices.Length; i++)
-				this.vertices.Add(vertices[i]);
+				this.vertices.AddLast(vertices[i]);
 			for (int i = 0; i < indices.Length; i++)
-				this.indices.Add(indices[i] + lastIndex);
+				this.indices.AddLast(indices[i] + lastIndex);
 			for (int i = 0; i < colors.Length; i++)
-				this.colors.Add(colors[i]);
+				this.colors.AddLast(colors[i]);
 			for (int i = 0; i < uvs.Length; i++)
-				this.uvs.Add(uvs[i]);
+				this.uvs.AddLast(uvs[i]);
 			lastIndex += vertices.Length;
 		}
 	}
@@ -66,13 +67,13 @@ public class GrowableMesh
 		if (vertices.Length > 0 && indices.Length > 0)
 		{
 			for (int i = 0; i < vertices.Length; i++)
-				this.vertices.Add(vertices[i] + position);
+				this.vertices.AddLast(vertices[i] + position);
 			for (int i = 0; i < indices.Length; i++)
-				this.indices.Add(indices[i] + lastIndex);
+				this.indices.AddLast(indices[i] + lastIndex);
 			for (int i = 0; i < colors.Length; i++)
-				this.colors.Add(colors[i]);
+				this.colors.AddLast(colors[i]);
 			for (int i = 0; i < uvs.Length; i++)
-				this.uvs.Add(uvs[i]);
+				this.uvs.AddLast(uvs[i]);
 			lastIndex += vertices.Length;
 		}
 	}

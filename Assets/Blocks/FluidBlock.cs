@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using System.Collections.Generic;
 
 [Serializable]
 public class FluidBlock : CubeBlock
@@ -48,29 +49,29 @@ public class FluidBlock : CubeBlock
 		Vector3i BlockUnderThisPosition = position + Vector3i.down;
 		Vector3i BlockBesidesThisPosition = Vector3i.zero;
 		Block blockUnderThis = world.GetBlock(BlockUnderThisPosition);
-		Block blockBesidesThis;
 		if (world.IsInWorld(BlockUnderThisPosition) && (blockUnderThis == null || !blockUnderThis.IsSolid && Density > blockUnderThis.Density))
-			world.SwapBlocks(position, BlockUnderThisPosition);
-		else if (/*Global.rnd.*/StaticRandom.Next(4) == 0)
 		{
-			switch (/*Global.rnd.*/StaticRandom.Next(4))
-			{
-				case 0:
-					BlockBesidesThisPosition = position + Vector3i.right;
-					break;
-				case 1:
-					BlockBesidesThisPosition = position + Vector3i.left;
-					break;
-				case 2:
-					BlockBesidesThisPosition = position + Vector3i.forward; //Error
-					break;
-				case 3:
-					BlockBesidesThisPosition = position + Vector3i.back; //Error
-					break;
-			}
-			blockBesidesThis = world.GetBlock(BlockBesidesThisPosition);
-			if (world.IsInWorld(BlockBesidesThisPosition) && (blockBesidesThis == null || !blockBesidesThis.IsSolid && Density > blockBesidesThis.Density))
-				world.SwapBlocks(position, BlockBesidesThisPosition);
+			world.SwapBlocks(position, BlockUnderThisPosition);
+			return;
 		}
+
+		List<Vector3i> freeSides = new List<Vector3i>(4);
+		Vector3i tempPosition;
+		tempPosition = position + Vector3i.right;
+		if (world.IsInWorld(tempPosition) && world.GetBlock(tempPosition) == null)
+			freeSides.Add(tempPosition);
+		tempPosition = position + Vector3i.left;
+		if (world.IsInWorld(tempPosition) && world.GetBlock(tempPosition) == null)
+			freeSides.Add(tempPosition);
+		tempPosition = position + Vector3i.front;
+		if (world.IsInWorld(tempPosition) && world.GetBlock(tempPosition) == null)
+			freeSides.Add(tempPosition);
+		tempPosition = position + Vector3i.back;
+		if (world.IsInWorld(tempPosition) && world.GetBlock(tempPosition) == null)
+			freeSides.Add(tempPosition);
+		if (freeSides.Count >= 1)
+			world.SwapBlocks(position, freeSides[StaticRandom.Next(freeSides.Count - 1)]);
+		else if (freeSides.Count == 1)
+			world.SwapBlocks(position, freeSides[0]);
 	}
 }

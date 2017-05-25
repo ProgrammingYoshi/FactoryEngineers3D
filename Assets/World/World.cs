@@ -131,7 +131,9 @@ public class World : MonoBehaviour
 				{
 					if (y / 16F < Mathf.PerlinNoise(x / 32F, z / 32F + Mathf.PerlinNoise(x / 17F, z / 19F)))
 						SetBlock(new Vector3i(x, y, z), new DirtBlock(new Vector3i(x, y, z)));
-					if (x > 5 && y > 15 && z > 5 && x < 25 && y < 35 && z < 25)
+					if (x > 5 && y > 15 && z > 5 && x < 10 && y < 20 && z < 10)
+						SetBlock(new Vector3i(x, y, z), new FluidBlock(new Vector3i(x, y, z)));
+					/*if (x > 5 && y > 15 && z > 5 && x < 25 && y < 35 && z < 25)
 						SetBlock(new Vector3i(x, y, z), new FluidBlock(new Vector3i(x, y, z)));
 					/*if (y == 0)//if (y < 10 && Mathf.Sin(x) * Mathf.Sin(y / 2) * Mathf.Sin(z) > 0)
 						SetBlock(new Vector3i(x, y, z), new DirtBlock(new Vector3i(x, y, z)));*/
@@ -255,7 +257,7 @@ public class World : MonoBehaviour
 			(IsBlockThere(position + Vector3i.down) && GetBlock(position + Vector3i.down).GetType() == blockType ? 0 : 4) |
 			(IsBlockThere(position + Vector3i.up) && GetBlock(position + Vector3i.up).GetType() == blockType ? 0 : 8) |
 			(IsBlockThere(position + Vector3i.back) && GetBlock(position + Vector3i.back).GetType() == blockType ? 0 : 16) |
-			(IsBlockThere(position + Vector3i.forward) && GetBlock(position + Vector3i.forward).GetType() == blockType ? 0 : 32);
+			(IsBlockThere(position + Vector3i.front) && GetBlock(position + Vector3i.front).GetType() == blockType ? 0 : 32);
 	}
 
 	public int GetFreeSides2(Vector3i position) //TODO
@@ -265,7 +267,7 @@ public class World : MonoBehaviour
 			(IsSolid(position + Vector3i.down) ? 0 : 4) |
 			(IsSolid(position + Vector3i.up) ? 0 : 8) |
 			(IsSolid(position + Vector3i.back) ? 0 : 16) |
-			(IsSolid(position + Vector3i.forward) ? 0 : 32);
+			(IsSolid(position + Vector3i.front) ? 0 : 32);
 	}
 
 	public void Save(string directory)

@@ -4,6 +4,7 @@ using System.Collections;
 public class Interaction : MonoBehaviour
 {
 	public World world;
+	public IngameMenu ingameMenu;
 
 	void Start()
 	{
@@ -27,9 +28,6 @@ public class Interaction : MonoBehaviour
 		if (Input.GetMouseButtonDown(0))
 		{
 			world.BlockAtSelection = null;
-			Cursor.lockState = CursorLockMode.Locked;
-			Cursor.visible = false;
-			Global.mouseLookEnabled = true;
 		}
 		if (Input.GetMouseButtonDown(1))
 		{
@@ -37,9 +35,23 @@ public class Interaction : MonoBehaviour
 		}
 		if (Input.GetKeyDown(KeyCode.Escape))
 		{
-			Cursor.lockState = CursorLockMode.None;
-			Cursor.visible = true;
-			Global.mouseLookEnabled = false;
-		}
+			DisableInteraction();
+			ingameMenu.gameObject.SetActive(true);
+        }
+    }
+
+	public void EnableInteraction()
+	{
+		Cursor.lockState = CursorLockMode.Locked;
+		Cursor.visible = false;
+		Global.mouseLookEnabled = true;
+	}
+
+	public void DisableInteraction()
+	{
+		Cursor.lockState = CursorLockMode.None;
+		Cursor.visible = true;
+		Global.mouseLookEnabled = false;
+		enabled = false;
 	}
 }

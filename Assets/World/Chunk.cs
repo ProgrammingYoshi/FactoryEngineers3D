@@ -119,6 +119,7 @@ public class Chunk : MonoBehaviour
 				}
 
 		test.Stop();
+		if(test.ElapsedMilliseconds > 10)
 		UnityEngine.Debug.Log(test.ElapsedMilliseconds);
 		test.Reset();
 
@@ -151,7 +152,7 @@ public class Chunk : MonoBehaviour
 			case 4:
 				return world.GetBlock(position, this).GetType() != world.GetBlock(position + Vector3i.back, this).GetType();
 			case 5:
-				return world.GetBlock(position, this).GetType() != world.GetBlock(position + Vector3i.forward, this).GetType();
+				return world.GetBlock(position, this).GetType() != world.GetBlock(position + Vector3i.front, this).GetType();
 			default:
 				return true;
 		}
