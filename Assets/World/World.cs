@@ -6,7 +6,6 @@ using System;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
-using System.Collections.Concurrent;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 [Serializable]
@@ -177,7 +176,10 @@ public class World : MonoBehaviour
 			test.Reset();*/
 		}
 		cnt++;
+		UnityEngine.Debug.Log("crt: " + (Global.statistics.chunkRenderTime-lfcrt).ToString());
+		lfcrt = Global.statistics.chunkRenderTime;
 	}
+	double lfcrt = 0;
 
 	void Tick()
 	{
@@ -191,7 +193,8 @@ public class World : MonoBehaviour
 		//for (int i = 0; i < blocksToSwap.Count; i++)
 		while(!blocksToSwap.IsEmpty)
 		{
-			blocksToSwap.TryDequeue(out kvp);
+			//blocksToSwap.TryDequeue(out kvp);
+			kvp = blocksToSwap.Dequeue();
 			a = kvp.Key;
 			b = kvp.Value;
 			Block tmp = GetBlock(new Vector3i(a.x, a.y, a.z));

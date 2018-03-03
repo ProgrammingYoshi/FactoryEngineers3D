@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
+//using UnityEditor;
 using UnityEngine;
 
 public class Make3DTex : MonoBehaviour {
@@ -21,7 +21,7 @@ public class Make3DTex : MonoBehaviour {
 		}
 		tex.SetPixels(newC);
 		tex.Apply();
-		AssetDatabase.CreateAsset(tex, "Assets/myFilename.asset");
+		//AssetDatabase.CreateAsset(tex, "Assets/myFilename.asset");
 	}
 
 }

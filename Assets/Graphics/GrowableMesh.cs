@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Collections.Concurrent;
 
 public class GrowableMesh
 {
@@ -56,6 +55,46 @@ public class GrowableMesh
 				this.vertices.Add(vertices[i]);
 			for (int i = 0; i < indices.Length; i++)
 				this.indices.Add(indices[i] + lastIndex);
+			this.colors.AddRange(colors);
+			this.uvs.AddRange(uvs);
+			lastIndex += vertices.Length;
+		}
+	}
+	public void AddMeshPiece(Vector3[] vertices, int[] indices, Color[] colors, Vector2[] uvs, Vector3 position)
+	{
+		if (vertices.Length > 0 && indices.Length > 0)
+		{
+			this.vertices.AddRange(vertices.Select(vector => vector + position));
+			this.indices.AddRange(indices.Select(index => index + lastIndex));
+			this.colors.AddRange(colors);
+			this.uvs.AddRange(uvs);
+			lastIndex += vertices.Length;
+		}
+	}
+	/*
+	public void AddMeshPiece(MeshPiece meshPiece, Vector3 position)
+	{
+		if (meshPiece.vertices.Length > 0 && meshPiece.indices.Length > 0)
+		{
+			for (int i = 0; i < meshPiece.vertices.Length; i++)
+				vertices.Add(meshPiece.vertices[i] + position);
+			for (int i = 0; i < meshPiece.indices.Length; i++)
+				indices.Add(meshPiece.indices[i] + lastIndex);
+			for (int i = 0; i < meshPiece.colors.Length; i++)
+				colors.Add(meshPiece.colors[i]);
+			for (int i = 0; i < meshPiece.uvs.Length; i++)
+				uvs.Add(meshPiece.uvs[i]);
+			lastIndex += meshPiece.vertices.Length;
+		}
+	}
+	public void AddMeshPiece(Vector3[] vertices, int[] indices, Color[] colors, Vector2[] uvs)
+	{
+		if (vertices.Length > 0 && indices.Length > 0)
+		{
+			for (int i = 0; i < vertices.Length; i++)
+				this.vertices.Add(vertices[i]);
+			for (int i = 0; i < indices.Length; i++)
+				this.indices.Add(indices[i] + lastIndex);
 			for (int i = 0; i < colors.Length; i++)
 				this.colors.Add(colors[i]);
 			for (int i = 0; i < uvs.Length; i++)
@@ -73,7 +112,7 @@ public class GrowableMesh
 			this.uvs.AddRange(uvs);
 			lastIndex += vertices.Length;
 		}
-	}
+	}*/
 }
 
 public class MeshPiece

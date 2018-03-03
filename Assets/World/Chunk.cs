@@ -104,12 +104,12 @@ public class Chunk : MonoBehaviour
 	public int threadFinishCount = 0;
 	void RefreshChunk()
 	{
+		test.Start();
 		Global.statistics.ChunkRender();
 		GrowableMesh growableMesh = new GrowableMesh();
 		Vector3i renderPosition;
 		int index = 0;
 
-		test.Start();
 		for (int x = 0; x < chunkSize; x++) //TODO: Multithread this
 			for (int y = 0; y < chunkSize; y++) //TODO: For real do multithread this
 				for (int z = 0; z < chunkSize; z++)
@@ -122,7 +122,6 @@ public class Chunk : MonoBehaviour
 					}
 				}
 
-		test.Stop();
 		index += chunkSize;
 		Mesh colliderMesh = new Mesh();
 		colliderMesh.vertices = growableMesh.GetVertices();
@@ -135,8 +134,12 @@ public class Chunk : MonoBehaviour
 		mesh.uv = growableMesh.GetUvs();
 		mesh.RecalculateNormals(); //TODO: Add normals to block class
 		meshFilter.mesh = mesh;
+		test.Stop();
+		Global.statistics.AddChunkRenderTime(test.ElapsedMilliseconds);
 		if (test.ElapsedMilliseconds > 0)
+		{
 			UnityEngine.Debug.Log(test.ElapsedMilliseconds);
+		}
 		test.Reset();
 	}
 	
